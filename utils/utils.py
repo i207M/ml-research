@@ -9,16 +9,19 @@ class Config(Namespace):
     def __init__(self, config):
         for key, value in config.items():
             if isinstance(value, (list, tuple)):
-                setattr(self, key, [Config(x) if isinstance(x, dict) else x for x in value])
+                setattr(
+                    self, key, [Config(x) if isinstance(x, dict) else x for x in value]
+                )
             else:
                 setattr(self, key, Config(value) if isinstance(value, dict) else value)
 
 
 class Logger(object):
     """Save terminal outputs to log file, and continue to print on the terminal."""
+
     def __init__(self, log_filename):
         self.terminal = sys.stdout
-        self.log = open(log_filename, 'a', buffering=1)
+        self.log = open(log_filename, "a", buffering=1)
 
     def write(self, message):
         self.terminal.write(message)
@@ -46,13 +49,15 @@ def format_time(s):
     s = int(s)
     m, s = divmod(s, 60)
     h, m = divmod(m, 60)
-    return f'{h:02d}h{m:02d}m{s:02d}s'
+    return f"{h:02d}h{m:02d}m{s:02d}s"
 
 
-def print_model_spec(model, name=''):
+def print_model_spec(model, name=""):
     n_parameters = count_n_parameters(model)
     n_trainable_parameters = count_n_parameters(model, only_trainable=True)
-    print(f'Model {name}: {n_parameters:.2f}M parameters of which {n_trainable_parameters:.2f}M are trainable.\n')
+    print(
+        f"Model {name}: {n_parameters:.2f}M parameters of which {n_trainable_parameters:.2f}M are trainable.\n"
+    )
 
 
 def count_n_parameters(model, only_trainable=False):

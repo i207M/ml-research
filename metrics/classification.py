@@ -23,18 +23,18 @@ class AccuracyMetrics:
         if self.n_batch > 0:
             score = self.value / self.n_batch
         else:
-            score = -float('inf')
+            score = -float("inf")
 
-        self.tensorboard.add_scalar(self.mode + '/accuracy', score, global_step)
+        self.tensorboard.add_scalar(self.mode + "/accuracy", score, global_step)
 
         self.save_json(score)
         self.reset()
         return score
 
     def save_json(self, score):
-        filename = os.path.join(self.session_name, self.mode + '_metrics.json')
-        output = {'accuracy': score}
-        with open(filename, 'w', encoding='utf-8') as f:
+        filename = os.path.join(self.session_name, self.mode + "_metrics.json")
+        output = {"accuracy": score}
+        with open(filename, "w", encoding="utf-8") as f:
             json.dump(output, f, ensure_ascii=False, indent=4)
 
     def reset(self):

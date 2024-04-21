@@ -5,37 +5,54 @@ import torch.nn as nn
 
 
 class ConvBlock(nn.Module):
-    """2D convolution followed by
-         - an optional normalisation (batch norm or instance norm)
-         - an optional activation (ReLU, LeakyReLU, or tanh)
     """
-    def __init__(self, in_channels, out_channels=None, kernel_size=3, stride=1, norm='bn', activation='relu',
-                 bias=False, transpose=False):
+    2D convolution followed by
+    - an optional normalisation (batch norm or instance norm)
+    - an optional activation (ReLU, LeakyReLU, or tanh)
+    """
+
+    def __init__(
+        self,
+        in_channels,
+        out_channels=None,
+        kernel_size=3,
+        stride=1,
+        norm="bn",
+        activation="relu",
+        bias=False,
+        transpose=False,
+    ):
         super().__init__()
         out_channels = out_channels or in_channels
         padding = int((kernel_size - 1) / 2)
-        self.conv = nn.Conv2d if not transpose else partial(nn.ConvTranspose2d, output_padding=1)
-        self.conv = self.conv(in_channels, out_channels, kernel_size, stride, padding=padding, bias=bias)
+        self.conv = (
+            nn.Conv2d
+            if not transpose
+            else partial(nn.ConvTranspose2d, output_padding=1)
+        )
+        self.conv = self.conv(
+            in_channels, out_channels, kernel_size, stride, padding=padding, bias=bias
+        )
 
-        if norm == 'bn':
+        if norm == "bn":
             self.norm = nn.BatchNorm2d(out_channels)
-        elif norm == 'in':
+        elif norm == "in":
             self.norm = nn.InstanceNorm2d(out_channels)
-        elif norm == 'none':
+        elif norm == "none":
             self.norm = None
         else:
-            raise ValueError('Invalid norm {}'.format(norm))
+            raise ValueError("Invalid norm {}".format(norm))
 
-        if activation == 'relu':
+        if activation == "relu":
             self.activation = nn.ReLU()
-        elif activation == 'lrelu':
+        elif activation == "lrelu":
             self.activation = nn.LeakyReLU(0.1)
-        elif activation == 'tanh':
+        elif activation == "tanh":
             self.activation = nn.Tanh()
-        elif activation == 'none':
+        elif activation == "none":
             self.activation = None
         else:
-            raise ValueError('Invalid activation {}'.format(activation))
+            raise ValueError("Invalid activation {}".format(activation))
 
     def forward(self, x):
         x = self.conv(x)
@@ -48,20 +65,50 @@ class ConvBlock(nn.Module):
 
 
 class ResBlock(nn.Module):
-    """Residual block:
-       x -> Conv -> norm -> act. -> Conv -> norm -> act. -> ADD -> out
-         |                                                   |
-          ---------------------------------------------------
     """
-    def __init__(self, in_channels, out_channels=None, norm='bn', activation='relu', bias=False):
+    Residual block:
+    x -> Conv -> norm -> act. -> Conv -> norm -> act. -> ADD -> out
+      |                                                   |
+       ---------------------------------------------------
+    """
+
+    def __init__(
+        self, in_channels, out_channels=None, norm="bn", activation="relu", bias=False
+    ):
         super().__init__()
         out_channels = out_channels or in_channels
 
-        self.layers = nn.Sequential(OrderedDict([
-            ('conv_1', ConvBlock(in_channels, in_channels, 3, stride=1, norm=norm, activation=activation, bias=bias)),
-            ('conv_2', ConvBlock(in_channels, out_channels, 3, stride=1, norm=norm, activation=activation, bias=bias)),
-            ('dropout', nn.Dropout2d(0.25)),
-        ]))
+        self.layers = nn.Sequential(
+            OrderedDict(
+                [
+                    (
+                        "conv_1",
+                        ConvBlock(
+                            in_channels,
+                            in_channels,
+                            3,
+                            stride=1,
+                            norm=norm,
+                            activation=activation,
+                            bias=bias,
+                        ),
+                    ),
+                    (
+                        "conv_2",
+                        ConvBlock(
+                            in_channels,
+                            out_channels,
+                            3,
+                            stride=1,
+                            norm=norm,
+                            activation=activation,
+                            bias=bias,
+                        ),
+                    ),
+                    ("dropout", nn.Dropout2d(0.25)),
+                ]
+            )
+        )
 
         if out_channels != in_channels:
             self.projection = nn.Conv2d(in_channels, out_channels, 1)
