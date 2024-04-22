@@ -61,6 +61,8 @@ def add_arguments(default=None):
         parser.add_argument("-c", "--config", type=Path, required=True)
         args = vars(parser.parse_known_args()[0])
         conf = yaml.safe_load(args["config"].read_text())
+    elif isinstance(default, str):
+        conf = yaml.safe_load(Path(default).read_text())
     else:
         conf = copy.deepcopy(default)
 
@@ -77,7 +79,7 @@ def add_arguments(default=None):
         if isinstance(call_dict(conf, cur), dict):
             queue = queue + [str(cur) + "." + str(x) for x in list(cur_call.keys())]
         else:
-            args_to_create.append("--" + str(cur), cur_call)
+            args_to_create.append(("--" + str(cur), cur_call))
 
     for key, val in args_to_create:
         if type(val) is bool:
